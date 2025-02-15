@@ -1,6 +1,6 @@
 package com.proj.proxy.service;
 
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,31 +16,21 @@ public class ProxyService {
     }
 
     public ResponseEntity<String> proxy(String url) {
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        System.out.println("Response from " + url + ": " + response.getBody());
+        String ensuredUrl = ensureProtocol(url);
+        System.out.println("Ensured URL: " + ensuredUrl);
+        ResponseEntity<String> response = restTemplate.getForEntity(ensuredUrl, String.class);
         if(response.getBody()==null){
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         }
-        return ResponseEntity.ok(modifyLinks(response.getBody(), getBaseUrl(url)));
-    }
-
-    public ResponseEntity<String> proxy(String url, String body) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-        return ResponseEntity.ok(response.getBody());
+        return ResponseEntity.ok(modifyLinks(response.getBody(), getBaseUrl(ensuredUrl)));
     }
 
     private String modifyLinks(String html, String baseUrl) {
         String modifiedHtml = html.replaceAll("href=\"/", "href=\"" +"/proxy?url=" + baseUrl + "/");
         modifiedHtml = modifiedHtml.replaceAll("src=\"/", "src=\""+"/proxy?url=" + baseUrl + "/");
         modifiedHtml = modifiedHtml.replaceAll("action=\"/", "action=\""+"/proxy?url=" + baseUrl + "/");
-
         return modifiedHtml;
     }
-
 
     public String getBaseUrl(String url) {
         try {
@@ -49,5 +39,17 @@ public class ProxyService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static String ensureProtocol(String url) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
+
+        if (!url.startsWith("https://")) {
+            return "https://" + url;
+        }
+
+        return url;
     }
 }
