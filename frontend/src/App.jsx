@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [history, setHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
-  const [currentUrl, setCurrentUrl] = useState('');
+  const [currentUrl, setCurrentUrl] = useState("");
 
   const handleNavigate = (direction) => {
     let newIndex = currentIndex;
-    if (direction === 'next' && currentIndex < history.length - 1) {
+    if (direction === "next" && currentIndex < history.length - 1) {
       newIndex++;
-    } else if (direction === 'prev' && currentIndex > 0) {
+    } else if (direction === "prev" && currentIndex > 0) {
       newIndex--;
     }
 
@@ -24,11 +24,10 @@ function App() {
   const handleUrlSubmit = async (e) => {
     e.preventDefault();
     setCurrentUrl(url);
-    console.log('URL:', url);
+    console.log("URL:", url);
     if (url && !history.includes(url)) {
       setHistory([...history, url]);
       setCurrentIndex(history.length);
-
     }
   };
 
@@ -46,20 +45,29 @@ function App() {
       </form>
 
       <div className="navigation-buttons">
-        <button onClick={() => handleNavigate('prev')} disabled={currentIndex <= 0}>
+        <button
+          onClick={() => handleNavigate("prev")}
+          disabled={currentIndex <= 0}
+        >
           Previous
         </button>
-        <button onClick={() => handleNavigate('next')} disabled={currentIndex >= history.length - 1}>
+        <button
+          onClick={() => handleNavigate("next")}
+          disabled={currentIndex >= history.length - 1}
+        >
           Next
         </button>
       </div>
-
-      <iframe
-        src={`http://localhost:8080/proxy?url=${currentUrl}`}
-        width="100%"
-        height="600px"
-        title="Proxy Content"
-      ></iframe>
+      <div id="content" style={{height:"600px"}}>
+        {currentUrl && (
+          <iframe
+            src={`http://localhost:8080/proxy?url=${currentUrl}`}
+            width="100%"
+            height="100%"
+            title="Proxy Content"
+          ></iframe>
+        )}
+      </div>
     </div>
   );
 }
