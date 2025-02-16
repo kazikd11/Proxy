@@ -10,8 +10,10 @@ import java.net.URI;
 public class ProxyService {
 
     private final RestTemplate restTemplate;
+    private final History history;
 
-    public ProxyService() {
+    public ProxyService(History history) {
+        this.history = history;
         this.restTemplate = new RestTemplate();
     }
 
@@ -22,6 +24,7 @@ public class ProxyService {
         if(response.getBody()==null){
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         }
+        history.add(ensuredUrl);
         return ResponseEntity.ok(modifyLinks(response.getBody(), getBaseUrl(ensuredUrl)));
     }
 
