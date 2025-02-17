@@ -4,7 +4,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 @Service
 public class ProxyService {
@@ -20,39 +24,43 @@ public class ProxyService {
     public ResponseEntity<String> proxy(String url) {
         String ensuredUrl = ensureProtocol(url);
         System.out.println("Ensured URL: " + ensuredUrl);
+
         ResponseEntity<String> response = restTemplate.getForEntity(ensuredUrl, String.class);
-        if(response.getBody()==null){
-            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+
+        if (response.getBody() == null) {
+            return ResponseEntity.status(response.getStatusCode()).body(null);
         }
+
         history.add(ensuredUrl);
-        return ResponseEntity.ok(modifyLinks(response.getBody(), getBaseUrl(ensuredUrl)));
+        String modifiedBody = modifyLinks(response.getBody(), getBaseLink(ensuredUrl));
+//        saveHtmlToFile(modifiedBody);
+        return ResponseEntity.ok(modifiedBody);
     }
 
     private String modifyLinks(String html, String baseUrl) {
-        String modifiedHtml = html.replaceAll("href=\"/", "href=\"" +"/proxy?url=" + baseUrl + "/");
-        modifiedHtml = modifiedHtml.replaceAll("src=\"/", "src=\""+"/proxy?url=" + baseUrl + "/");
-        modifiedHtml = modifiedHtml.replaceAll("action=\"/", "action=\""+"/proxy?url=" + baseUrl + "/");
-        return modifiedHtml;
+        String proxyPrefix = "/proxy?url=";
+
+        System.out.println("Base URL: " + baseUrl);
+        html = html.replaceAll("href=\"/", "href=\"" + proxyPrefix + baseUrl+"/");
+//        html = html.replaceAll("src=\"/", "src=\"" + proxyPrefix + baseUrl+"/");
+        html = html.replaceAll("action=\"/", "action=\"" + proxyPrefix + baseUrl+"/");
+
+        return html;
     }
 
-    public String getBaseUrl(String url) {
+    private String ensureProtocol(String url) {
+        if (url == null || url.isEmpty()) {
+            return url;
+        }
+        return url.startsWith("https://")||url.startsWith("http://") ? url : "https://" + url;
+    }
+
+    private String getBaseLink(String url) {
         try {
             URI uri = new URI(url);
             return uri.getScheme() + "://" + uri.getHost();
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public static String ensureProtocol(String url) {
-        if (url == null || url.isEmpty()) {
-            return url;
-        }
-
-        if (!url.startsWith("https://")) {
-            return "https://" + url;
-        }
-
-        return url;
     }
 }
