@@ -26,7 +26,7 @@ public class ProxyService {
         try {
             response = restTemplate.getForEntity(url, String.class);
         } catch (Exception e) {
-            return ResponseEntity.status(201).body("Error fetching URL: " + e.getMessage());
+            return ResponseEntity.status(201).body("Unfortunately, the URL is not reachable: " + e.getMessage());
         }
 
         if (response.getBody() == null) {
