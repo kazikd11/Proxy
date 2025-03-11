@@ -22,8 +22,12 @@ public class ProxyService {
     public ResponseEntity<String> proxy(String url) {
         System.out.println("Ensured URL: " + url);
 
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.getForEntity(url, String.class);
+        } catch (Exception e) {
+            return ResponseEntity.status(201).body("Error fetching URL: " + e.getMessage());
+        }
 
         if (response.getBody() == null) {
             return ResponseEntity.status(response.getStatusCode()).body(null);
@@ -31,7 +35,7 @@ public class ProxyService {
 
         String modifiedBody = modifyLinks(response.getBody(), getBaseLink(url));
 //        saveHtmlToFile(modifiedBody);
-        
+
         return ResponseEntity.ok(modifiedBody);
     }
 
