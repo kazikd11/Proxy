@@ -20,17 +20,16 @@ public class ProxyService {
     }
 
     public ResponseEntity<String> proxy(String url) {
-        String ensuredUrl = ensureProtocol(url);
-        System.out.println("Ensured URL: " + ensuredUrl);
+        System.out.println("Ensured URL: " + url);
 
-        ResponseEntity<String> response = restTemplate.getForEntity(ensuredUrl, String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
 
         if (response.getBody() == null) {
             return ResponseEntity.status(response.getStatusCode()).body(null);
         }
 
-        String modifiedBody = modifyLinks(response.getBody(), getBaseLink(ensuredUrl));
+        String modifiedBody = modifyLinks(response.getBody(), getBaseLink(url));
 //        saveHtmlToFile(modifiedBody);
         
         return ResponseEntity.ok(modifiedBody);
@@ -47,13 +46,6 @@ public class ProxyService {
         html = html.replaceAll("action=\"/", "action=\"" + proxyPrefix + baseUrl+"/");
 
         return html;
-    }
-
-    private String ensureProtocol(String url) {
-        if (url == null || url.isEmpty()) {
-            return url;
-        }
-        return url.startsWith("https://")||url.startsWith("http://") ? url : "https://" + url;
     }
 
     private String getBaseLink(String url) {
