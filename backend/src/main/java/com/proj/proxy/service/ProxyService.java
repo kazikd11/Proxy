@@ -14,10 +14,8 @@ import java.nio.file.StandardOpenOption;
 public class ProxyService {
 
     private final RestTemplate restTemplate;
-    private final History history;
 
-    public ProxyService(History history) {
-        this.history = history;
+    public ProxyService() {
         this.restTemplate = new RestTemplate();
     }
 
@@ -32,7 +30,6 @@ public class ProxyService {
             return ResponseEntity.status(response.getStatusCode()).body(null);
         }
 
-        history.add(ensuredUrl);
         String modifiedBody = modifyLinks(response.getBody(), getBaseLink(ensuredUrl));
 //        saveHtmlToFile(modifiedBody);
         
