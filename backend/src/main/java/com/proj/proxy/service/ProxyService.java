@@ -27,6 +27,7 @@ public class ProxyService {
 
         ResponseEntity<String> response = restTemplate.getForEntity(ensuredUrl, String.class);
 
+
         if (response.getBody() == null) {
             return ResponseEntity.status(response.getStatusCode()).body(null);
         }
@@ -34,15 +35,18 @@ public class ProxyService {
         history.add(ensuredUrl);
         String modifiedBody = modifyLinks(response.getBody(), getBaseLink(ensuredUrl));
 //        saveHtmlToFile(modifiedBody);
+        
         return ResponseEntity.ok(modifiedBody);
     }
+
+
 
     private String modifyLinks(String html, String baseUrl) {
         String proxyPrefix = "/proxy?url=";
 
         System.out.println("Base URL: " + baseUrl);
         html = html.replaceAll("href=\"/", "href=\"" + proxyPrefix + baseUrl+"/");
-//        html = html.replaceAll("src=\"/", "src=\"" + proxyPrefix + baseUrl+"/");
+        html = html.replaceAll("src=\"/", "src=\"" + proxyPrefix + baseUrl+"/");
         html = html.replaceAll("action=\"/", "action=\"" + proxyPrefix + baseUrl+"/");
 
         return html;
@@ -63,4 +67,15 @@ public class ProxyService {
             return null;
         }
     }
+
+//    private void saveHtmlToFile(String modifiedBody) {
+//        String filePath = "saved_page.html";
+//
+//        try {
+//            Files.write(Paths.get(filePath), modifiedBody.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+//            System.out.println("HTML saved to " + filePath);
+//        } catch (IOException e) {
+//            System.err.println("Error saving HTML to file: " + e.getMessage());
+//        }
+//    }
 }
